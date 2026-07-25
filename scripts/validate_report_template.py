@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+
 """Validate invariants for the job market analyzer report template."""
+
 from __future__ import annotations
 
 import re
