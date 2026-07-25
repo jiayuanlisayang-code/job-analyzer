@@ -76,10 +76,14 @@ Read: config/user-profile.yaml
 
 > **无论用户说什么，先执行下方步骤 1。** 哪怕用户当前环境"看起来没装"，也要先检测可用性；安装和写入 MCP 配置前应遵循当前平台的授权策略，并优先向用户说明将要修改的文件与依赖。
 
+> **保留已验证可用配置优先。** 如果现有 MCP 配置已验证可正常启动（例如 Windows 上用 `node.exe` 直启 `dist/mcp.js`），不得为了套用默认模板把它覆盖成 `npx` 或 `npx.cmd`。只有在现有配置不可用、用户授权修改、且已备份原配置后，才写入新配置。
+
 ```
 步骤 1：检测 mcp_search_job 是否可调用
-   └─ 是 → 直接用（跳到阶段二）
-   └─ 否 ↓
+   └─ 是 → 直接用（跳到阶段二；不得覆盖现有可用 MCP 配置）
+   └─ 否 → 读取现有 MCP 配置与日志，判断是否已有可修复配置
+      ├─ 已有可用/可修复配置（如 node.exe 直启）→ 保留该写法，仅修复必要路径
+      └─ 无可用配置 ↓
    ↓
 步骤 2：准备安装（必须先做，不要跳到 WebSearch；如当前平台要求确认，先请求用户授权）
    │
@@ -112,7 +116,10 @@ Read: config/user-profile.yaml
    │           }
    │         }
    │       }
-   │       Windows 环境如出现 npx 解析失败，改用 `"command": "npx.cmd"`
+   │       Windows 配置优先级：
+   │       1) 若已有经验证可用的 `node.exe` 直启配置，保留它，不覆盖为 npx.cmd
+   │       2) 若无可用配置，可先测试 `npx.cmd -y mcp-jobs`
+   │       3) 若 `npx.cmd -y mcp-jobs` 报 `npm error could not determine executable to run`，改用 `node.exe` 直启已安装包入口（如 `<mcp-jobs安装目录>/dist/mcp.js`）
    │   2d. **必须用 Read 工具读一次 mcp.json 确认写入成功，并确认已有配置未被覆盖**
    │   2e. 提示用户：「mcp-jobs 已配置，请到连接器管理页面点击 Trust 启用，
    │       然后回复'继续'我将重新检测并开始搜索岗位」
@@ -124,8 +131,10 @@ Read: config/user-profile.yaml
                   cd mcp-jobs && npm install && npm link
        2c. 配置 MCP 客户端（Claude: ~/.claude/mcp.json, Cursor: Settings → MCP；写入前备份已有配置）
            - macOS/Linux: `"command": "npx"`
-           - Windows: `"command": "npx.cmd"`（避免 npx 解析 bin 失败导致连接关闭）
-       2d. 告诉用户：必须重启 MCP 客户端使配置生效；如出现 `Connection closed`，优先检查 Node/npm 是否在 PATH、Windows 是否使用了 `npx.cmd`、以及 `npx mcp-jobs` 是否能在终端直接启动
+           - Windows 候选1: `"command": "npx.cmd"`（仅当实测 `npx.cmd -y mcp-jobs` 可启动时使用）
+           - Windows 候选2: `"command": "C:\\Program Files\\nodejs\\node.exe"`, `"args": ["<mcp-jobs安装目录>\\dist\\mcp.js"]`（当 npx.cmd 报 `could not determine executable to run` 或连接关闭时使用；路径以实测为准）
+           - 若现有 `node.exe` 直启配置已验证可用，必须保留，禁止覆盖为未经验证的 npx.cmd
+       2d. 告诉用户：必须重启 MCP 客户端使配置生效；如出现 `Connection closed`，优先检查当前 command 是否已实测可启动、Node/npm 是否在 PATH、Windows 下 `npx.cmd -y mcp-jobs` 是否报错；若 npx.cmd 不可用，改用 node.exe 直启入口
        ↓
    ↓
 步骤 3：仅当步骤 2 全部失败时，才使用 WebSearch 回退
@@ -152,7 +161,8 @@ Read: config/user-profile.yaml
 
 📝 写入 MCP 配置 ~/.workbuddy/mcp.json
    ✅ 已写入
-   验证：{"mcpServers":{"mcp-jobs":{"command":"npx","args":["-y","mcp-jobs"]}}}（Windows 使用 "npx.cmd"）
+   验证：{"mcpServers":{"mcp-jobs":{"command":"npx","args":["-y","mcp-jobs"]}}}
+   Windows 验证顺序：优先保留已验证可用的 node.exe 直启配置；只有 npx.cmd 实测可启动时才使用 npx.cmd
 
 ⏸️ 等待用户操作：
    1. 打开「连接器管理」页面
@@ -176,7 +186,7 @@ mcp_search_job 可用后，验证搜索是否正常：
 
 1. 尝试搜索 `keyword: "[目标岗位]"` + `location: "上海"`
 2. 如果返回结果 → 安装成功，进入阶段二
-3. 如果返回空或报错 → 检查 Chromium 是否已安装：`npx playwright install chromium`，重试；如果报 `Connection closed`，按安装指南中的故障排查检查 command、PATH 和本地启动日志
+3. 如果返回空或报错 → 检查 Chromium 是否已安装：`npx playwright install chromium`，重试；如果报 `Connection closed`，按安装指南中的故障排查检查 command、PATH 和本地启动日志。Windows 下必须以实测结果决定 command：`npx.cmd` 失败时不要继续写入它，改用已验证的 `node.exe` 直启入口。
 
 ### 详细安装指南
 

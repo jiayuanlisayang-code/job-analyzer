@@ -17,7 +17,7 @@
 
 ### 方式零：来源选择（优先级递减）
 
-安装时按以下顺序尝试，任一成功即停止。若自动化 agent 将修改 MCP 配置或全局安装依赖，应先说明影响范围，并在写入配置前备份已有文件：
+安装时按以下顺序尝试，任一成功即停止。若自动化 agent 将修改 MCP 配置或全局安装依赖，应先说明影响范围，并在写入配置前备份已有文件；如果已有经验证可用的 MCP 配置（尤其是 Windows 上的 `node.exe` 直启写法），应优先保留，不要用默认模板覆盖：
 
 1. **npm registry**：`npm install -g mcp-jobs`
 2. **GitHub clone**：`git clone https://github.com/mergedao/mcp-jobs.git && cd mcp-jobs && npm install && npm link`
@@ -60,7 +60,7 @@ npx mcp-jobs
 }
 ```
 
-Windows 下建议显式使用 `npx.cmd`，避免 MCP 客户端无法解析 npm shim 导致连接立即关闭：
+Windows 下可先测试 `npx.cmd`，避免 MCP 客户端无法解析 npm shim 导致连接立即关闭。但 `npx.cmd` 不是最终兜底方案：如果 `npx.cmd -y mcp-jobs` 报 `npm error could not determine executable to run`，不要把 MCP 配置写成 npx.cmd，应改用下方 `node.exe` 直启方式。
 
 ```json
 {
@@ -68,6 +68,20 @@ Windows 下建议显式使用 `npx.cmd`，避免 MCP 客户端无法解析 npm s
     "mcp-jobs": {
       "command": "npx.cmd",
       "args": ["-y", "mcp-jobs"]
+    }
+  }
+}
+```
+
+
+如果 Windows 环境里 `npx.cmd` 实测不可用，但你能定位到 mcp-jobs 的入口文件，可使用已验证的 `node.exe` 直启写法（路径按本机实际安装位置替换）：
+
+```json
+{
+  "mcpServers": {
+    "mcp-jobs": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["C:\\path\\to\\mcp-jobs\\dist\\mcp.js"]
     }
   }
 }
@@ -90,7 +104,7 @@ mcp-jobs 会自动下载 Chromium（约 150MB，仅一次）。
 | 问题 | 原因 | 解决 |
 |------|------|------|
 | `mcp_search_job` 工具不存在 | MCP 未连接或配置未生效 | 重载连接器，确认 config 中 `disabled: false` |
-| `Connection closed` | MCP 服务启动后立即退出；常见于 Windows 未使用 `npx.cmd`、Node/npm 不在 PATH、包启动报错 | Windows 将 `command` 改为 `npx.cmd`；确认 `node -v`、`npm -v`、`npx mcp-jobs` 可在同一终端运行；查看 MCP 客户端日志 |
+| `Connection closed` | MCP 服务启动后立即退出；常见于 command 未实测、Windows `npx.cmd` 仍无法解析包入口、Node/npm 不在 PATH、包启动报错 | 先在同一终端实测 `node -v`、`npm -v`、`npx.cmd -y mcp-jobs`；如出现 `npm error could not determine executable to run`，不要使用 npx.cmd，改用已验证的 `node.exe` 直启 `dist/mcp.js`；查看 MCP 客户端日志 |
 | 调用返回空结果 | Playwright 未安装 Chromium | 运行 `npx playwright install chromium` |
 | Timeout | 招聘网站响应慢 | 增加 timeout 或检查网络 |
 | `EBADENGINE` 错误 | Node 版本不兼容 | 切换到 Node >= 18 |
