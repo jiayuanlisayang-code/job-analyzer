@@ -1,0 +1,16 @@
+# Local user profile; may contain personal information
+config/user-profile.yaml
+
+# Generated reports
+*.html
+!assets/report-template.html
+!examples/*.html
+
+# OS/editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.py[cod]

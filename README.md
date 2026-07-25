@@ -8,7 +8,7 @@
 
 ## 快速开始
 
-**两步即可使用，无需手动编辑文件：**
+**推荐路径：两步即可使用，无需手动编辑文件。**
 
 1. **向 AI 助手说出你的需求：**
 
@@ -26,6 +26,10 @@ Skill 会自动：
 - 检测并安装 mcp-jobs（如需）
 - 搜索匹配岗位
 - 生成 HTML 报告
+
+### 可选：使用 YAML 预填写画像
+
+如果你希望提前配置个人画像，也可以复制 `config/user-profile.example.yaml` 为 `config/user-profile.yaml` 后填写。该文件可能包含个人敏感信息，应通过 `.gitignore` 保持本地私有。
 
 ## 功能架构
 
@@ -74,7 +78,7 @@ ai-pm-job-analyzer/
 ├── assets/
 │   └── report-template.html          # HTML 报告 CSS 模板
 ├── config/
-│   └── user-profile.example.yaml     # 用户画像模板（复制后填写）
+│   └── user-profile.example.yaml     # 用户画像模板（可选复制后填写）
 └── references/
     └── mcp-jobs-setup.md             # 多平台 mcp-jobs 安装指南
 ```
@@ -90,3 +94,13 @@ ai-pm-job-analyzer/
 ## License
 
 MIT
+
+## 开发校验
+
+修改报告模板或 Skill 规则后，建议运行：
+
+```bash
+python3 scripts/validate_report_template.py
+```
+
+该脚本会检查模板中的 Tier CSS 绑定、伪链接和本地画像忽略规则。
