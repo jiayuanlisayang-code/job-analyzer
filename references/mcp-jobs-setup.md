@@ -47,13 +47,26 @@ npm install -g mcp-jobs
 npx mcp-jobs
 ```
 
-然后在你的 MCP 客户端配置中添加：
+然后在你的 MCP 客户端配置中添加。macOS/Linux 通常使用：
 
 ```json
 {
   "mcpServers": {
     "mcp-jobs": {
       "command": "npx",
+      "args": ["-y", "mcp-jobs"]
+    }
+  }
+}
+```
+
+Windows 下建议显式使用 `npx.cmd`，避免 MCP 客户端无法解析 npm shim 导致连接立即关闭：
+
+```json
+{
+  "mcpServers": {
+    "mcp-jobs": {
+      "command": "npx.cmd",
       "args": ["-y", "mcp-jobs"]
     }
   }
@@ -77,6 +90,7 @@ mcp-jobs 会自动下载 Chromium（约 150MB，仅一次）。
 | 问题 | 原因 | 解决 |
 |------|------|------|
 | `mcp_search_job` 工具不存在 | MCP 未连接或配置未生效 | 重载连接器，确认 config 中 `disabled: false` |
+| `Connection closed` | MCP 服务启动后立即退出；常见于 Windows 未使用 `npx.cmd`、Node/npm 不在 PATH、包启动报错 | Windows 将 `command` 改为 `npx.cmd`；确认 `node -v`、`npm -v`、`npx mcp-jobs` 可在同一终端运行；查看 MCP 客户端日志 |
 | 调用返回空结果 | Playwright 未安装 Chromium | 运行 `npx playwright install chromium` |
 | Timeout | 招聘网站响应慢 | 增加 timeout 或检查网络 |
 | `EBADENGINE` 错误 | Node 版本不兼容 | 切换到 Node >= 18 |

@@ -112,6 +112,7 @@ Read: config/user-profile.yaml
    │           }
    │         }
    │       }
+   │       Windows 环境如出现 npx 解析失败，改用 `"command": "npx.cmd"`
    │   2d. **必须用 Read 工具读一次 mcp.json 确认写入成功，并确认已有配置未被覆盖**
    │   2e. 提示用户：「mcp-jobs 已配置，请到连接器管理页面点击 Trust 启用，
    │       然后回复'继续'我将重新检测并开始搜索岗位」
@@ -122,7 +123,9 @@ Read: config/user-profile.yaml
        2b. 失败 → git clone https://github.com/mergedao/mcp-jobs.git
                   cd mcp-jobs && npm install && npm link
        2c. 配置 MCP 客户端（Claude: ~/.claude/mcp.json, Cursor: Settings → MCP；写入前备份已有配置）
-       2d. 告诉用户：必须重启 MCP 客户端使配置生效
+           - macOS/Linux: `"command": "npx"`
+           - Windows: `"command": "npx.cmd"`（避免 npx 解析 bin 失败导致连接关闭）
+       2d. 告诉用户：必须重启 MCP 客户端使配置生效；如出现 `Connection closed`，优先检查 Node/npm 是否在 PATH、Windows 是否使用了 `npx.cmd`、以及 `npx mcp-jobs` 是否能在终端直接启动
        ↓
    ↓
 步骤 3：仅当步骤 2 全部失败时，才使用 WebSearch 回退
@@ -149,7 +152,7 @@ Read: config/user-profile.yaml
 
 📝 写入 MCP 配置 ~/.workbuddy/mcp.json
    ✅ 已写入
-   验证：{"mcpServers":{"mcp-jobs":{"command":"npx","args":["-y","mcp-jobs"]}}}
+   验证：{"mcpServers":{"mcp-jobs":{"command":"npx","args":["-y","mcp-jobs"]}}}（Windows 使用 "npx.cmd"）
 
 ⏸️ 等待用户操作：
    1. 打开「连接器管理」页面
@@ -173,7 +176,7 @@ mcp_search_job 可用后，验证搜索是否正常：
 
 1. 尝试搜索 `keyword: "[目标岗位]"` + `location: "上海"`
 2. 如果返回结果 → 安装成功，进入阶段二
-3. 如果返回空或报错 → 检查 Chromium 是否已安装：`npx playwright install chromium`，重试
+3. 如果返回空或报错 → 检查 Chromium 是否已安装：`npx playwright install chromium`，重试；如果报 `Connection closed`，按安装指南中的故障排查检查 command、PATH 和本地启动日志
 
 ### 详细安装指南
 
