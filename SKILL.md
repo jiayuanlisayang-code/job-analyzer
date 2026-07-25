@@ -1,13 +1,13 @@
 ---
-name: ai-pm-job-analyzer
+name: job-market-analyzer
 description: >
-  AI产品经理招聘岗位分析报告生成器。当用户请求分析特定行业/方向的AI产品经理招聘市场、
+  通用招聘岗位分析报告生成器。当用户请求分析特定岗位/行业/方向的招聘市场、
   对标自身背景与岗位要求的差距、或生成求职能力分析报告时使用此技能。
-  Trigger: user asks to analyze AI PM job market, benchmark their profile against job requirements,
-  or generate a career analysis report. Supports any industry, location, company type, and experience level.
+  Trigger: user asks to analyze a target role job market, benchmark their profile against job requirements,
+  or generate a career analysis report. Supports any role, industry, location, company type, and experience level.
 ---
 
-# AI PM Job Market Analyzer
+# Job Market Analyzer
 
 ## Overview
 
@@ -34,7 +34,7 @@ Read: config/user-profile.yaml
 
 - **工作背景**：行业、年限、具体产品/模块
 - **学历背景**：学校级别、专业、学位
-- **目标岗位**：AI产品经理 或 其他AI相关角色
+- **目标岗位**：用户希望分析的具体岗位，如 AI产品经理、数据分析师、运营、销售、工程师等
 - **目标行业**：物流/金融/医疗/电商/制造/通用等
 - **公司类型偏好**：外企/大厂/独角兽/创业/远程
 - **工作地点**：城市名 或 "远程"
@@ -70,18 +70,22 @@ Read: config/user-profile.yaml
 
 ## 阶段一：数据源检测 + 强制自动配置 mcp-jobs ⚠️ 不要跳过此阶段
 
-**🚨 关键原则：检测到 mcp-jobs 不可用时，**第一个动作必须是尝试安装**，绝对不能直接跳到 WebSearch 回退。WebSearch 仅在 npm install + git clone 全部失败后才使用。**
+**🚨 关键原则：检测到 mcp-jobs 不可用时，第一个动作必须是尝试安装，绝对不能直接跳到 WebSearch 回退。WebSearch 仅在 npm install + git clone 全部失败后才使用。**
 
 ### 强制执行流程（命令式，不允许跳步）
 
-> **无论用户说什么，先执行下方步骤 1。** 哪怕用户当前环境"看起来没装"，也要先尝试安装并写 MCP 配置。
+> **无论用户说什么，先执行下方步骤 1。** 哪怕用户当前环境"看起来没装"，也要先检测可用性；安装和写入 MCP 配置前应遵循当前平台的授权策略，并优先向用户说明将要修改的文件与依赖。
+>
+> **保留已验证可用配置优先。** 如果现有 MCP 配置已验证可正常启动（例如 Windows 上用 `node.exe` 直启 `dist/mcp.js`），不得为了套用默认模板把它覆盖成 `npx` 或 `npx.cmd`。只有在现有配置不可用、用户授权修改、且已备份原配置后，才写入新配置。
 
 ```
 步骤 1：检测 mcp_search_job 是否可调用
-   └─ 是 → 直接用（跳到阶段二）
-   └─ 否 ↓
+   └─ 是 → 直接用（跳到阶段二；不得覆盖现有可用 MCP 配置）
+   └─ 否 → 读取现有 MCP 配置与日志，判断是否已有可修复配置
+      ├─ 已有可用/可修复配置（如 node.exe 直启）→ 保留该写法，仅修复必要路径
+      └─ 无可用配置 ↓
    ↓
-步骤 2：立即执行安装（必须先做，不要跳到 WebSearch）
+步骤 2：准备安装（必须先做，不要跳到 WebSearch；如当前平台要求确认，先请求用户授权）
    │
    │   信息源：
    │   - GitHub: https://github.com/mergedao/mcp-jobs
@@ -101,7 +105,7 @@ Read: config/user-profile.yaml
    │       cd ~/.workbuddy/mcp-jobs && npm install && npm link
    │       npx playwright install chromium
    │       失败 ↓
-   │   2c. 写 MCP 配置（必须做，不允许跳）：
+   │   2c. 写 MCP 配置（必须做，不允许跳；写入前备份已有配置）：
    │       Edit ~/.workbuddy/mcp.json：
    │       {
    │         "mcpServers": {
@@ -112,7 +116,11 @@ Read: config/user-profile.yaml
    │           }
    │         }
    │       }
-   │   2d. **必须用 Read 工具读一次 mcp.json 确认写入成功**
+   │       Windows 配置优先级：
+   │       1) 若已有经验证可用的 `node.exe` 直启配置，保留它，不覆盖为 npx.cmd
+   │       2) 若无可用配置，可先测试 `npx.cmd -y mcp-jobs`
+   │       3) 若 `npx.cmd -y mcp-jobs` 报 `npm error could not determine executable to run`，改用 `node.exe` 直启已安装包入口（如 `<mcp-jobs安装目录>/dist/mcp.js`）
+   │   2d. **必须用 Read 工具读一次 mcp.json 确认写入成功，并确认已有配置未被覆盖**
    │   2e. 提示用户：「mcp-jobs 已配置，请到连接器管理页面点击 Trust 启用，
    │       然后回复'继续'我将重新检测并开始搜索岗位」
    │   2f. 等待用户确认后重新检测
@@ -121,8 +129,12 @@ Read: config/user-profile.yaml
        2a. npm install -g mcp-jobs
        2b. 失败 → git clone https://github.com/mergedao/mcp-jobs.git
                   cd mcp-jobs && npm install && npm link
-       2c. 配置 MCP 客户端（Claude: ~/.claude/mcp.json, Cursor: Settings → MCP）
-       2d. 告诉用户：必须重启 MCP 客户端使配置生效
+       2c. 配置 MCP 客户端（Claude: ~/.claude/mcp.json, Cursor: Settings → MCP；写入前备份已有配置）
+           - macOS/Linux: `"command": "npx"`
+           - Windows 候选1: `"command": "npx.cmd"`（仅当实测 `npx.cmd -y mcp-jobs` 可启动时使用）
+           - Windows 候选2: `"command": "C:\\Program Files\\nodejs\\node.exe"`, `"args": ["<mcp-jobs安装目录>\\dist\\mcp.js"]`（当 npx.cmd 报 `could not determine executable to run` 或连接关闭时使用；路径以实测为准）
+           - 若现有 `node.exe` 直启配置已验证可用，必须保留，禁止覆盖为未经验证的 npx.cmd
+       2d. 告诉用户：必须重启 MCP 客户端使配置生效；如出现 `Connection closed`，优先检查当前 command 是否已实测可启动、Node/npm 是否在 PATH、Windows 下 `npx.cmd -y mcp-jobs` 是否报错；若 npx.cmd 不可用，改用 node.exe 直启入口
        ↓
    ↓
 步骤 3：仅当步骤 2 全部失败时，才使用 WebSearch 回退
@@ -150,6 +162,7 @@ Read: config/user-profile.yaml
 📝 写入 MCP 配置 ~/.workbuddy/mcp.json
    ✅ 已写入
    验证：{"mcpServers":{"mcp-jobs":{"command":"npx","args":["-y","mcp-jobs"]}}}
+   Windows 验证顺序：优先保留已验证可用的 node.exe 直启配置；只有 npx.cmd 实测可启动时才使用 npx.cmd
 
 ⏸️ 等待用户操作：
    1. 打开「连接器管理」页面
@@ -171,9 +184,9 @@ Read: config/user-profile.yaml
 
 mcp_search_job 可用后，验证搜索是否正常：
 
-1. 尝试搜索 `keyword: "AI产品经理"` + `location: "上海"`
+1. 尝试搜索 `keyword: "[目标岗位]"` + `location: "上海"`
 2. 如果返回结果 → 安装成功，进入阶段二
-3. 如果返回空或报错 → 检查 Chromium 是否已安装：`npx playwright install chromium`，重试
+3. 如果返回空或报错 → 检查 Chromium 是否已安装：`npx playwright install chromium`，重试；如果报 `Connection closed`，按安装指南中的故障排查检查 command、PATH 和本地启动日志。Windows 下必须以实测结果决定 command：`npx.cmd` 失败时不要继续写入它，改用已验证的 `node.exe` 直启入口。
 
 ### 详细安装指南
 
@@ -188,9 +201,9 @@ mcp_search_job 可用后，验证搜索是否正常：
 
 **路径 A：mcp-jobs 可用时（最优，结构化数据）**
 
-1. `mcp_search_job` 搜索 `keyword: "AI产品经理 [行业]"` + `location: [地点]`
+1. `mcp_search_job` 搜索 `keyword: "[目标岗位] [行业]"` + `location: [地点]`
    → 结果中包含 `url` 字段，**立即记录到岗位列表中**
-2. `mcp_search_job` 搜索 `keyword: "AI产品经理 [行业相关场景]"` + `location: [地点]`
+2. `mcp_search_job` 搜索 `keyword: "[目标岗位] [行业相关场景]"` + `location: [地点]`
 3. 对关键岗位调用 `mcp_job_detail` 获取完整 JD 描述和更多信息
 4. **过滤：删除所有 `url` 为空或无效的岗位**，保留 ≥10 个有效岗位供筛选
 
@@ -199,10 +212,10 @@ mcp_search_job 可用后，验证搜索是否正常：
 并行搜索以下关键词组：
 
 ```
-组1（中文平台）: "AI产品经理 招聘 [行业] [地点] site:zhipin.com OR site:liepin.com"
-组2（外企英文）: "AI product manager [industry] [city] hiring [year]"
-组3（目标公司）: "[公司名] AI product manager [location] hiring"
-组4（能力分析）: "AI产品经理 [行业] 核心能力要求 技能清单"
+组1（中文平台）: "[目标岗位] 招聘 [行业] [地点] site:zhipin.com OR site:liepin.com"
+组2（外企英文）: "[target role in English] [industry] [city] hiring [year]"
+组3（目标公司）: "[公司名] [target role in English] [location] hiring"
+组4（能力分析）: "[目标岗位] [行业] 核心能力要求 技能清单"
 ```
 
 **WebSearch URL 提取规则：**
@@ -216,10 +229,10 @@ mcp_search_job 可用后，验证搜索是否正常：
 根据用户公司偏好，针对性搜索 careers 页面。模板示例（按行业可替换公司名）：
 
 ```
-外企物流/供应链: site:careers.dhl.com OR site:amazon.jobs OR site:maersk.com "AI product manager"
-外企金融: site:careers.jpmorgan.com OR site:goldmansachs.com "AI product manager"
-大厂电商: site:alibaba.com OR site:meituan.com "AI产品经理"
-独角兽: site:zhipin.com "[公司名] AI产品经理"
+外企物流/供应链: site:careers.dhl.com OR site:amazon.jobs OR site:maersk.com "[target role in English]"
+外企金融: site:careers.jpmorgan.com OR site:goldmansachs.com "[target role in English]"
+大厂电商: site:alibaba.com OR site:meituan.com "[目标岗位]"
+独角兽: site:zhipin.com "[公司名] [目标岗位]"
 ```
 
 ### 阶段三：岗位筛选与四级分层
@@ -345,9 +358,9 @@ mcp_search_job 可用后，验证搜索是否正常：
 
 **示例：**
 
-> **市场趋势：** 本次搜索到 18 个物流行业 AI PM 岗位。Tier 1 外企（Amazon/DHL/Maersk）均要求 5-7 年经验 + 已上线的 AI 产品案例，对 Agentic AI 的关注度显著上升。Tier 2/3 的国内物流公司（极兔/壹米滴答/申通）门槛明显更低（3-5 年，了解 AI 即可），且正处数字化转型加速期，AI PM 岗位从年初的零星几个增长到现在的批量上线。
+> **市场趋势：** 本次搜索到 18 个目标岗位相关机会。Tier 1 外企（Amazon/DHL/Maersk）均要求 5-7 年经验 + 已上线的 AI 产品案例，对 Agentic AI 的关注度显著上升。Tier 2/3 的国内物流公司（极兔/壹米滴答/申通）门槛明显更低（3-5 年，了解 AI 即可），且正处数字化转型加速期，目标岗位相关机会从年初的零星几个增长到现在的批量上线。
 >
-> **核心竞争力：** 用户的物流行业 5 年经验（订单/运单/计费全流程）是区别于纯互联网 AI PM 的最大护城河。极兔的智能路由、壹米滴答的 RAG 知识库、蚂蚁国际的跨境物流 AI 助手这三个场景与用户背景直接对应。985 硕士学历满足 Tier 1 外企的硬性门槛。
+> **核心竞争力：** 用户的物流行业 5 年经验（订单/运单/计费全流程）是区别于泛行业候选人的最大护城河。极兔的智能路由、壹米滴答的 RAG 知识库、蚂蚁国际的跨境物流 AI 助手这三个场景与用户背景直接对应。985 硕士学历满足 Tier 1 外企的硬性门槛。
 >
 > **关键差距：** 最大短板是缺少可展示的 AI 项目实战经验。最快提升路径是花 2-3 周用 LangChain 做一个「快递运单查询 Agent」原型（覆盖 RAG + Agent 两个核心概念），放在 GitHub 上作为面试作品。
 
@@ -499,7 +512,7 @@ mcp_search_job 可用后，验证搜索是否正常：
 2. **薪资统一为月薪**：年包换算为月薪（÷12~16），外币标注原始货币
 3. **数据时效**：footer 标注搜索日期 +「职位实时变化请以官方页面为准」
 4. **语言规则**：正文用中文，岗位标题和外企JD关键字段保留原语言
-5. **文件命名**：`AI产品经理招聘分析报告.html`，放工作目录下
+5. **文件命名**：`[目标岗位]招聘分析报告.html`，放工作目录下
 6. **报告展示**：生成后提示用户打开 HTML 文件（WorkBuddy 平台自动调用 preview）
 
 ## 报告逻辑检查清单
