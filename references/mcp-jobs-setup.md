@@ -17,7 +17,7 @@
 
 ### 方式零：来源选择（优先级递减）
 
-安装时按以下顺序尝试，任一成功即停止：
+安装时按以下顺序尝试，任一成功即停止。若自动化 agent 将修改 MCP 配置或全局安装依赖，应先说明影响范围，并在写入配置前备份已有文件：
 
 1. **npm registry**：`npm install -g mcp-jobs`
 2. **GitHub clone**：`git clone https://github.com/mergedao/mcp-jobs.git && cd mcp-jobs && npm install && npm link`
@@ -63,11 +63,9 @@ npx mcp-jobs
 **Claude Code 用户**：配置写到 `~/.claude/mcp.json` 或项目的 `.claude/mcp.json`。
 **Cursor / Windsurf 用户**：在设置 → MCP Servers 中添加。
 
-### 方式三：Docker（推荐用于服务器环境）
+### 方式三：Docker（待官方镜像确认）
 
-```bash
-docker run -d --name mcp-jobs ghcr.io/user/mcp-jobs:latest
-```
+目前本文档未确认 mcp-jobs 官方 Docker 镜像地址。不要直接使用占位镜像名运行生产环境容器；如需容器化部署，请优先参考 mcp-jobs 官方仓库发布的最新说明，或自行基于 npm 包构建内部镜像。
 
 ## 首次使用
 

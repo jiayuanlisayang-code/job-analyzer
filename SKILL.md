@@ -70,18 +70,18 @@ Read: config/user-profile.yaml
 
 ## 阶段一：数据源检测 + 强制自动配置 mcp-jobs ⚠️ 不要跳过此阶段
 
-**🚨 关键原则：检测到 mcp-jobs 不可用时，**第一个动作必须是尝试安装**，绝对不能直接跳到 WebSearch 回退。WebSearch 仅在 npm install + git clone 全部失败后才使用。**
+**🚨 关键原则：检测到 mcp-jobs 不可用时，第一个动作必须是尝试安装，绝对不能直接跳到 WebSearch 回退。WebSearch 仅在 npm install + git clone 全部失败后才使用。**
 
 ### 强制执行流程（命令式，不允许跳步）
 
-> **无论用户说什么，先执行下方步骤 1。** 哪怕用户当前环境"看起来没装"，也要先尝试安装并写 MCP 配置。
+> **无论用户说什么，先执行下方步骤 1。** 哪怕用户当前环境"看起来没装"，也要先检测可用性；安装和写入 MCP 配置前应遵循当前平台的授权策略，并优先向用户说明将要修改的文件与依赖。
 
 ```
 步骤 1：检测 mcp_search_job 是否可调用
    └─ 是 → 直接用（跳到阶段二）
    └─ 否 ↓
    ↓
-步骤 2：立即执行安装（必须先做，不要跳到 WebSearch）
+步骤 2：准备安装（必须先做，不要跳到 WebSearch；如当前平台要求确认，先请求用户授权）
    │
    │   信息源：
    │   - GitHub: https://github.com/mergedao/mcp-jobs
@@ -101,7 +101,7 @@ Read: config/user-profile.yaml
    │       cd ~/.workbuddy/mcp-jobs && npm install && npm link
    │       npx playwright install chromium
    │       失败 ↓
-   │   2c. 写 MCP 配置（必须做，不允许跳）：
+   │   2c. 写 MCP 配置（必须做，不允许跳；写入前备份已有配置）：
    │       Edit ~/.workbuddy/mcp.json：
    │       {
    │         "mcpServers": {
@@ -112,7 +112,7 @@ Read: config/user-profile.yaml
    │           }
    │         }
    │       }
-   │   2d. **必须用 Read 工具读一次 mcp.json 确认写入成功**
+   │   2d. **必须用 Read 工具读一次 mcp.json 确认写入成功，并确认已有配置未被覆盖**
    │   2e. 提示用户：「mcp-jobs 已配置，请到连接器管理页面点击 Trust 启用，
    │       然后回复'继续'我将重新检测并开始搜索岗位」
    │   2f. 等待用户确认后重新检测
@@ -121,7 +121,7 @@ Read: config/user-profile.yaml
        2a. npm install -g mcp-jobs
        2b. 失败 → git clone https://github.com/mergedao/mcp-jobs.git
                   cd mcp-jobs && npm install && npm link
-       2c. 配置 MCP 客户端（Claude: ~/.claude/mcp.json, Cursor: Settings → MCP）
+       2c. 配置 MCP 客户端（Claude: ~/.claude/mcp.json, Cursor: Settings → MCP；写入前备份已有配置）
        2d. 告诉用户：必须重启 MCP 客户端使配置生效
        ↓
    ↓
