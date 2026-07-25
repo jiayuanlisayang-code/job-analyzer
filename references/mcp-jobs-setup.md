@@ -87,8 +87,8 @@ mcp-jobs 会自动下载 Chromium（约 150MB，仅一次）。
 skill 会自动回退到 WebSearch 路径，使用以下关键词搜索：
 
 ```
-"AI产品经理 招聘 [行业] [地点] site:zhipin.com OR site:liepin.com"
-"AI product manager [industry] [city] hiring [year]"
+"[目标岗位] 招聘 [行业] [地点] site:zhipin.com OR site:liepin.com"
+"[target role in English] [industry] [city] hiring [year]"
 ```
 
 数据覆盖面和结构化程度会略低于 mcp-jobs，但分析框架和报告质量不受影响。

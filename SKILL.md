@@ -1,13 +1,13 @@
 ---
-name: ai-pm-job-analyzer
+name: job-market-analyzer
 description: >
-  AI产品经理招聘岗位分析报告生成器。当用户请求分析特定行业/方向的AI产品经理招聘市场、
+  通用招聘岗位分析报告生成器。当用户请求分析特定岗位/行业/方向的招聘市场、
   对标自身背景与岗位要求的差距、或生成求职能力分析报告时使用此技能。
-  Trigger: user asks to analyze AI PM job market, benchmark their profile against job requirements,
-  or generate a career analysis report. Supports any industry, location, company type, and experience level.
+  Trigger: user asks to analyze a target role job market, benchmark their profile against job requirements,
+  or generate a career analysis report. Supports any role, industry, location, company type, and experience level.
 ---
 
-# AI PM Job Market Analyzer
+# Job Market Analyzer
 
 ## Overview
 
@@ -34,7 +34,7 @@ Read: config/user-profile.yaml
 
 - **工作背景**：行业、年限、具体产品/模块
 - **学历背景**：学校级别、专业、学位
-- **目标岗位**：AI产品经理 或 其他AI相关角色
+- **目标岗位**：用户希望分析的具体岗位，如 AI产品经理、数据分析师、运营、销售、工程师等
 - **目标行业**：物流/金融/医疗/电商/制造/通用等
 - **公司类型偏好**：外企/大厂/独角兽/创业/远程
 - **工作地点**：城市名 或 "远程"
@@ -171,7 +171,7 @@ Read: config/user-profile.yaml
 
 mcp_search_job 可用后，验证搜索是否正常：
 
-1. 尝试搜索 `keyword: "AI产品经理"` + `location: "上海"`
+1. 尝试搜索 `keyword: "[目标岗位]"` + `location: "上海"`
 2. 如果返回结果 → 安装成功，进入阶段二
 3. 如果返回空或报错 → 检查 Chromium 是否已安装：`npx playwright install chromium`，重试
 
@@ -188,9 +188,9 @@ mcp_search_job 可用后，验证搜索是否正常：
 
 **路径 A：mcp-jobs 可用时（最优，结构化数据）**
 
-1. `mcp_search_job` 搜索 `keyword: "AI产品经理 [行业]"` + `location: [地点]`
+1. `mcp_search_job` 搜索 `keyword: "[目标岗位] [行业]"` + `location: [地点]`
    → 结果中包含 `url` 字段，**立即记录到岗位列表中**
-2. `mcp_search_job` 搜索 `keyword: "AI产品经理 [行业相关场景]"` + `location: [地点]`
+2. `mcp_search_job` 搜索 `keyword: "[目标岗位] [行业相关场景]"` + `location: [地点]`
 3. 对关键岗位调用 `mcp_job_detail` 获取完整 JD 描述和更多信息
 4. **过滤：删除所有 `url` 为空或无效的岗位**，保留 ≥10 个有效岗位供筛选
 
@@ -199,10 +199,10 @@ mcp_search_job 可用后，验证搜索是否正常：
 并行搜索以下关键词组：
 
 ```
-组1（中文平台）: "AI产品经理 招聘 [行业] [地点] site:zhipin.com OR site:liepin.com"
-组2（外企英文）: "AI product manager [industry] [city] hiring [year]"
-组3（目标公司）: "[公司名] AI product manager [location] hiring"
-组4（能力分析）: "AI产品经理 [行业] 核心能力要求 技能清单"
+组1（中文平台）: "[目标岗位] 招聘 [行业] [地点] site:zhipin.com OR site:liepin.com"
+组2（外企英文）: "[target role in English] [industry] [city] hiring [year]"
+组3（目标公司）: "[公司名] [target role in English] [location] hiring"
+组4（能力分析）: "[目标岗位] [行业] 核心能力要求 技能清单"
 ```
 
 **WebSearch URL 提取规则：**
@@ -216,10 +216,10 @@ mcp_search_job 可用后，验证搜索是否正常：
 根据用户公司偏好，针对性搜索 careers 页面。模板示例（按行业可替换公司名）：
 
 ```
-外企物流/供应链: site:careers.dhl.com OR site:amazon.jobs OR site:maersk.com "AI product manager"
-外企金融: site:careers.jpmorgan.com OR site:goldmansachs.com "AI product manager"
-大厂电商: site:alibaba.com OR site:meituan.com "AI产品经理"
-独角兽: site:zhipin.com "[公司名] AI产品经理"
+外企物流/供应链: site:careers.dhl.com OR site:amazon.jobs OR site:maersk.com "[target role in English]"
+外企金融: site:careers.jpmorgan.com OR site:goldmansachs.com "[target role in English]"
+大厂电商: site:alibaba.com OR site:meituan.com "[目标岗位]"
+独角兽: site:zhipin.com "[公司名] [目标岗位]"
 ```
 
 ### 阶段三：岗位筛选与四级分层
@@ -345,9 +345,9 @@ mcp_search_job 可用后，验证搜索是否正常：
 
 **示例：**
 
-> **市场趋势：** 本次搜索到 18 个物流行业 AI PM 岗位。Tier 1 外企（Amazon/DHL/Maersk）均要求 5-7 年经验 + 已上线的 AI 产品案例，对 Agentic AI 的关注度显著上升。Tier 2/3 的国内物流公司（极兔/壹米滴答/申通）门槛明显更低（3-5 年，了解 AI 即可），且正处数字化转型加速期，AI PM 岗位从年初的零星几个增长到现在的批量上线。
+> **市场趋势：** 本次搜索到 18 个目标岗位相关机会。Tier 1 外企（Amazon/DHL/Maersk）均要求 5-7 年经验 + 已上线的 AI 产品案例，对 Agentic AI 的关注度显著上升。Tier 2/3 的国内物流公司（极兔/壹米滴答/申通）门槛明显更低（3-5 年，了解 AI 即可），且正处数字化转型加速期，目标岗位相关机会从年初的零星几个增长到现在的批量上线。
 >
-> **核心竞争力：** 用户的物流行业 5 年经验（订单/运单/计费全流程）是区别于纯互联网 AI PM 的最大护城河。极兔的智能路由、壹米滴答的 RAG 知识库、蚂蚁国际的跨境物流 AI 助手这三个场景与用户背景直接对应。985 硕士学历满足 Tier 1 外企的硬性门槛。
+> **核心竞争力：** 用户的物流行业 5 年经验（订单/运单/计费全流程）是区别于泛行业候选人的最大护城河。极兔的智能路由、壹米滴答的 RAG 知识库、蚂蚁国际的跨境物流 AI 助手这三个场景与用户背景直接对应。985 硕士学历满足 Tier 1 外企的硬性门槛。
 >
 > **关键差距：** 最大短板是缺少可展示的 AI 项目实战经验。最快提升路径是花 2-3 周用 LangChain 做一个「快递运单查询 Agent」原型（覆盖 RAG + Agent 两个核心概念），放在 GitHub 上作为面试作品。
 
@@ -499,7 +499,7 @@ mcp_search_job 可用后，验证搜索是否正常：
 2. **薪资统一为月薪**：年包换算为月薪（÷12~16），外币标注原始货币
 3. **数据时效**：footer 标注搜索日期 +「职位实时变化请以官方页面为准」
 4. **语言规则**：正文用中文，岗位标题和外企JD关键字段保留原语言
-5. **文件命名**：`AI产品经理招聘分析报告.html`，放工作目录下
+5. **文件命名**：`[目标岗位]招聘分析报告.html`，放工作目录下
 6. **报告展示**：生成后提示用户打开 HTML 文件（WorkBuddy 平台自动调用 preview）
 
 ## 报告逻辑检查清单

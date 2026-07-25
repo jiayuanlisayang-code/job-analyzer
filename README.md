@@ -1,9 +1,9 @@
-# AI PM Job Analyzer 🧠📊
+# Job Market Analyzer 🧠📊
 
 [![Platform](https://img.shields.io/badge/platform-WorkBuddy%20%7C%20Claude%20Code%20%7C%20Cursor-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-green)]()
 
-**AI产品经理招聘岗位分析报告生成器** — 从多平台抓取真实岗位，按公司实力四层分级，
+**通用招聘岗位分析报告生成器** — 根据目标岗位/行业/城市从多平台抓取真实岗位，按公司实力四层分级，
 提炼能力模型，对标用户差距，生成结构化 HTML 求职分析报告。
 
 ## 快速开始
@@ -13,7 +13,7 @@
 1. **向 AI 助手说出你的需求：**
 
 ```
-帮我分析AI产品经理的招聘市场
+帮我分析目标岗位的招聘市场，例如：AI产品经理、数据分析师、增长产品经理
 ```
 
 2. **在聊天框里回答几个问题**（首次使用时 Skill 会自动引导你填写画像，下次直接跳过）：
@@ -73,7 +73,7 @@ Skill 会自动：
 ## 文件结构
 
 ```
-ai-pm-job-analyzer/
+job-market-analyzer/
 ├── SKILL.md                          # 核心工作流程
 ├── assets/
 │   └── report-template.html          # HTML 报告 CSS 模板
