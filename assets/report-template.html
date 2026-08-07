@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{target_role}} {{work_location}} 招聘与能力分析（按公司实力分层）</title>
+<style>
+  :root {
+    --bg: #ffffff; --card: #f8f9fa; --border: #e0e0e0;
+    --text: #1a1a2e; --text2: #4a4a5a; --text3: #6b7280;
+    --accent: #2563eb; --accent2: #7c3aed; --green: #059669;
+    --orange: #ea580c; --red: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 1060px; margin: 0 auto; padding: 32px 24px; }
+  
+  header { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%); color: #fff; padding: 48px 32px; border-radius: 16px; margin-bottom: 36px; }
+  header h1 { font-size: 2rem; margin-bottom: 8px; }
+  header .sub { opacity: 0.85; font-size: 0.95rem; }
+  header .meta { margin-top: 16px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.85rem; opacity: 0.8; }
+  
+  h2 { font-size: 1.4rem; margin: 40px 0 16px; padding-bottom: 8px; display: inline-block; }
+  h3 { font-size: 1.15rem; margin: 28px 0 14px; display: flex; align-items: center; gap: 10px; }
+  
+  .tier-badge { display: inline-flex; align-items: center; padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .tier-1 { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; border: 1px solid #f59e0b; }
+  .tier-2 { background: linear-gradient(135deg, #e0e7ff, #c7d2fe); color: #3730a3; border: 1px solid #6366f1; }
+  .tier-3 { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; border: 1px solid #10b981; }
+  .tier-4 { background: linear-gradient(135deg, #f3e8ff, #e9d5ff); color: #6b21a8; border: 1px solid #a855f7; }
+
+  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .summary-card { background: var(--card); border-radius: 12px; padding: 18px; border-left: 4px solid var(--accent); }
+  .summary-card .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .summary-card .label { font-size: 0.82rem; color: var(--text3); margin-top: 2px; }
+  
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 0.88rem; }
+  th { background: #1e3a5f; color: #fff; padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  tr:hover td { background: #eff6ff; }
+  
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin: 2px; }
+  .tag-blue { background: #eff6ff; color: #1d4ed8; }
+  .tag-green { background: #ecfdf5; color: #059669; }
+  .tag-orange { background: #fff7ed; color: #ea580c; }
+  .tag-purple { background: #f5f3ff; color: #7c3aed; }
+  .tag-teal { background: #e0f2fe; color: #0891b2; }
+  .tag-gold { background: #fef3c7; color: #92400e; }
+  
+  .skill-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 16px 0 24px; }
+  .skill-card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid var(--border); }
+  .skill-card h4 { color: var(--accent); margin-bottom: 8px; font-size: 0.95rem; }
+  .skill-card ul { padding-left: 18px; color: var(--text2); font-size: 0.85rem; }
+  .skill-card li { margin-bottom: 3px; }
+  
+  .gap-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 20px 24px; margin: 16px 0; }
+  .gap-box h4 { color: var(--orange); margin-bottom: 8px; }
+  .strength-box { background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 12px; padding: 20px 24px; margin: 16px 0; }
+  .strength-box h4 { color: var(--green); margin-bottom: 8px; }
+  
+  .action-steps { counter-reset: step; list-style: none; padding: 0; }
+  .action-steps li { counter-increment: step; margin-bottom: 16px; padding: 16px 20px 16px 56px; background: var(--card); border-radius: 10px; position: relative; }
+  .action-steps li::before { content: counter(step); position: absolute; left: 16px; top: 16px; width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 700; }
+  
+  .job-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 14px; transition: box-shadow 0.2s; position: relative; }
+  .job-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .job-card .company-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .job-card .company-row strong { font-size: 1.05rem; color: var(--text); }
+  .job-card .title { font-size: 0.95rem; color: var(--accent); margin: 4px 0; }
+  .job-card .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0; color: var(--text3); font-size: 0.83rem; }
+  .job-card .reqs { margin-top: 8px; font-size: 0.83rem; color: var(--text2); }
+  .job-card .highlight { background: #fef3c7; padding: 1px 5px; border-radius: 3px; }
+  .job-link { display: inline-block; font-size: 0.75rem; color: var(--accent); text-decoration: none; border-bottom: 1px dashed var(--accent); margin-left: 4px; }
+  .job-link:hover { border-bottom-style: solid; }
+  
+  .rec { border-left: 4px solid var(--accent); background: linear-gradient(135deg, #f8faff, #f0f4ff); }
+  .rec-star { border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #fffdf7, #fffbe6); }
+  
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text3); font-size: 0.78rem; text-align: center; }
+
+  @media (max-width: 640px) {
+    .container { padding: 14px; }
+    header { padding: 24px 18px; }
+    header h1 { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>{{target_role}}（{{target_industry}}方向） {{work_location}} 招聘分析</h1>
+  <div class="sub">按公司实力分层：外企巨头 → 互联网大厂 → 行业独角兽 → 远程机会 | {{analysis_period}} 真实数据</div>
+  <div class="meta">
+    <span>📍 {{work_location}}</span>
+    <span>数据来源：{{data_sources}}</span>
+    <span>分析时间：{{analysis_date}}</span>
+  </div>
+</header>
+
+<!-- 数据概览 -->
+<div class="summary-cards">
+  <div class="summary-card"><div class="num">5家</div><div class="label">全球500强外企</div></div>
+  <div class="summary-card"><div class="num">6家</div><div class="label">互联网大厂</div></div>
+  <div class="summary-card"><div class="num">3家</div><div class="label">行业独角兽/上市物流</div></div>
+  <div class="summary-card"><div class="num">2家</div><div class="label">远程国际化公司</div></div>
+</div>
+
+<!-- ======= Tier 1: 外企巨头 ======= -->
+<h3 style="margin-top:0;"><span class="tier-badge tier-1">TIER 1</span> 外企巨头 — 全球500强 / 行业顶尖</h3>
+
+<div class="job-card rec-star">
+  <div class="company-row">
+    <strong>Amazon (亚马逊)</strong>
+    <span class="tag tag-gold">全球第一电商·500强</span>
+    <span class="tag tag-purple">强烈推荐</span>
+    <a class="job-link" href="https://www.amazon.jobs/zh/jobs/10465398/senior-ai-product-manager-amazon-global-selling-pmo" target="_blank">官网申请 →</a>
+    <a class="job-link" href="https://m.liepin.com/job/1978647075.shtml" target="_blank">猎聘 →</a>
+  </div>
+  <div class="title">Senior AI Product Manager, Amazon Global Selling</div>
+  <div class="meta-row">
+    <span>📍 上海</span><span>💰 65-95K/月</span><span>📋 7年+PM</span>
+  </div>
+  <div class="reqs">
+    <strong>工作内容：</strong>定义AI产品愿景与战略（GenAI + Agentic AI + 智能自动化），端到端负责AI产品生命周期，在卖家增长/营销/CRM场景落地。<br>
+    <strong>核心要求：</strong>中英文流利；AI/ML产品经验（LLM, Agentic AI）；A/B测试和模型评测能力；跨区域协作（北京/上海/深圳可选）。<br>
+    <span class="highlight">外企天花板！7年经验偏高级，但同团队还有 Senior Product Manager - AI（7年）和 Principal PM, FBA Supply Chain（供应链方向），可一并关注</span>
+  </div>
+</div>
+
+<div class="job-card rec-star">
+  <div class="company-row">
+    <strong>Amazon — FBA Supply Chain</strong>
+    <span class="tag tag-gold">全球供应链巨头</span>
+    <span class="tag tag-purple">最匹配！</span>
+    <a class="job-link" href="https://hirejack.com/jobs/product/shanghai-china/" target="_blank">HireJack →</a>
+    <a class="job-link" href="https://www.amazon.jobs/zh/" target="_blank">Amazon Jobs →</a>
+  </div>
+  <div class="title">Principal Product Manager, FBA Supply Chain Product</div>
+  <div class="meta-row">
+    <span>📍 上海</span><span>📋 高级岗位</span>
+  </div>
+  <div class="reqs">
+    <strong>工作内容：</strong>FBA（Fulfillment by Amazon）供应链产品，涉及仓储/配送/库存管理等核心物流场景。<br>
+    <span class="highlight">Amazon的供应链PM岗，物流经验是核心要求，你的背景直接对口！但Principal级别偏高，建议同时关注同团队Senior PM岗位</span>
+  </div>
+</div>
+
+<div class="job-card rec-star">
+  <div class="company-row">
+    <strong>Apple (苹果)</strong>
+    <span class="tag tag-gold">全球市值第一·500强</span>
+    <a class="job-link" href="https://hirejack.com/jobs/product/shanghai-china/" target="_blank">HireJack →</a>
+  </div>
+  <div class="title">Senior Product Manager — LLMs / Deep Learning / Machine Learning</div>
+  <div class="meta-row">
+    <span>📍 上海</span><span>📋 资深岗位</span>
+  </div>
+  <div class="reqs">
+    <strong>核心要求：</strong>LLM + Deep Learning + Machine Learning；英文工作环境；Apple上海办公室。<br>
+    <span class="highlight">品牌溢价+股票激励，供应链方向的产品岗也不定期放出，值得长期关注Apple Careers</span>
+  </div>
+</div>
+
+<div class="job-card rec-star">
+  <div class="company-row">
+    <strong>Maersk (马士基)</strong>
+    <span class="tag tag-green">全球最大航运·500强</span>
+    <a class="job-link" href="https://www.maersk.com/careers/vacancies/wd/Product-Manager_R176060-1/jt-product-manager?jobid=true" target="_blank">官网 →</a>
+    <a class="job-link" href="https://builtin.com/job/senior-product-manager-ocean-ai/8850053" target="_blank">Ocean AI →</a>
+  </div>
+  <div class="title">Product Manager — AI/Simulation/Optimization / Senior PM — Ocean AI</div>
+  <div class="meta-row">
+    <span>📍 哥本哈根（全球总部）</span><span>⏰ 全球岗位，可关注上海办公室</span>
+  </div>
+  <div class="reqs">
+    <strong>工作内容：</strong>构建AI+优化+仿真能力驱动全球航运网络规划；Ocean AI Big Bet项目（GenAI嵌入海运操作流程）。<br>
+    <strong>核心要求：</strong>物流/海运行业理解；AI/ML产品经验；跨时区协作。<br>
+    <span class="highlight">全球航运霸主，AI转型进行中！虽总部在哥本哈根但上海有办公室，建议持续关注Maersk上海岗位或远程机会</span>
+  </div>
+</div>
+
+<div class="job-card rec-star">
+  <div class="company-row">
+    <strong>DHL (德国DHL)</strong>
+    <span class="tag tag-green">全球物流第一·500强</span>
+    <a class="job-link" href="https://careers.dhl.com/eu/pt/job/DPDHGLOBALAV360261PTEUEXTERNAL/IT-Solutions-Consultant-Product-Manager-GenAI-Platforms" target="_blank">GenAI PM →</a>
+    <a class="job-link" href="https://careers.dhl.com/eu/pt/job/DPDHGLOBALRO00584PTEUEXTERNALLUMESSEAPAC/AI-and-Analytic-Product-Manager" target="_blank">APAC AI PM →</a>
+  </div>
+  <div class="title">Product Manager — GenAI Platforms / AI & Analytic PM (APAC)</div>
+  <div class="meta-row">
+    <span>📍 全球多地 · APAC</span><span>📅 APAC岗 7/24 截止</span>
+  </div>
+  <div class="reqs">
+    <strong>DHL GenAI PM（2-5年）：</strong>对话式AI/GenAI/NLP产品；RAG+检索技术；AI安全护栏和评测框架。<br>
+    <strong>DHL APAC AI PM（6年+）：</strong>硕士；LLM/Agentic AI；物流供应链行业经验；PMP/Agile优先。<br>
+    <span class="highlight">GenAI PM对经验要求较低（2-5年），非常匹配！物流行业+AI+全球平台</span>
+  </div>
+</div>
+
+<div class="job-card rec-star">
+  <div class="company-row">
+    <strong>Flexport (美国飞协博)</strong>
+    <span class="tag tag-green">科技物流独角兽·估值$80亿</span>
+    <span class="tag tag-purple">上海有办公室</span>
+    <a class="job-link" href="https://cn.linkedin.com/jobs/view/staff-product-manager-at-mac-venture-capital-4432512795" target="_blank">LinkedIn →</a>
+    <a class="job-link" href="https://www.flexport.com/careers/" target="_blank">官网 →</a>
+  </div>
+  <div class="title">Staff Product Manager — AI-Powered Freight Operating System</div>
+  <div class="meta-row">
+    <span>📍 上海</span><span>📋 6年+PM</span><span>英语工作语言</span>
+  </div>
+  <div class="reqs">
+    <strong>核心要求：</strong>AI/自动化产品经验+量化业务影响；SQL熟练；物流/货运代理经验高度优先。<br>
+    <span class="highlight">科技物流标杆！不要求必须有物流背景，你有物流经验是巨大加分</span>
+  </div>
+</div>
+
+<!-- ======= Tier 2: 互联网大厂 ======= -->
+<h3><span class="tier-badge tier-2">TIER 2</span> 互联网大厂 — 千亿市值 / 行业平台级</h3>
+
+<div class="job-card rec">
+  <div class="company-row">
+    <strong>阿里巴巴 · 蚂蚁国际</strong>
+    <span class="tag tag-blue">全球Top10互联网</span>
+    <span class="tag tag-purple">强推</span>
+    <a class="job-link" href="https://www.quanzhi.com/job/697c41b2201a1db41d58b101" target="_blank">猎聘 →</a>
+  </div>
+  <div class="title">WorldFirst AI产品经理 — 跨境贸易AI助手</div>
+  <div class="meta-row">
+    <span>📍 上海浦东 · 支付宝大厦</span><span>💰 25-50K·15薪</span><span>📋 3年+产品·2年+AI</span>
+  </div>
+  <div class="reqs">
+    <strong>工作内容：</strong>服务跨境贸易商户的AI助手，覆盖选商/选品/经营/<strong>物流</strong>/支付全链路。Multi-Agent生态搭建。<br>
+    <strong>核心要求：</strong>AI Agent从0到1经验；英文流利（与海外团队沟通）；商业化思维。<br>
+    <span class="highlight">蚂蚁国际+物流场景！经验门槛适中（3年产品+2年AI），上海浦东，阿里系待遇</span>
+  </div>
+</div>
+
+<div class="job-card rec">
+  <div class="company-row">
+    <strong>饿了么 · 淘宝闪购（阿里巴巴本地生活）</strong>
+    <span class="tag tag-blue">阿里系·即时配送</span>
+    <a class="job-link" href="https://www.liepin.com/job/1975323759.shtml" target="_blank">猎聘·大模型PM →</a>
+    <a class="job-link" href="https://jobs.niuqizp.com/job-vwr55NCZa.html" target="_blank">物流产品PM →</a>
+  </div>
+  <div class="title">大模型平台产品经理 / 物流产品经理（骑手作业&LBS）</div>
+  <div class="meta-row">
+    <span>📍 上海</span><span>💰 25-35K·13薪</span><span>📋 1-5年（分岗位）</span>
+  </div>
+  <div class="reqs">
+    <strong>大模型PM：</strong>0-1设计饿了么零售大模型产品；数据管理/模型调用/微调/评测工具规划。<br>
+    <strong>物流PM：</strong>骑手作业+LBS产品，即时配送场景。<br>
+    <span class="highlight">阿里系大厂+物流场景，大模型PM经验门槛仅1-3年</span>
+  </div>
+</div>
+
+<div class="job-card rec">
+  <div class="company-row">
+    <strong>美团</strong>
+    <span class="tag tag-blue">万亿市值·本地生活</span>
+    <a class="job-link" href="https://www.zhipin.com/zhaopin/67709a3c28f565d603B52ti9EA~~/" target="_blank">BOSS直聘 →</a>
+  </div>
+  <div class="title">策略产品经理 — 履约调度</div>
+  <div class="meta-row">
+    <span>📍 上海</span><span>💰 30-60K·16薪</span><span>📋 3-5年</span>
+  </div>
+  <div class="reqs">
+    <strong>核心要求：</strong>骑手调度/定价/供需调节等物流策略产品；数据驱动。<br>
+    <span class="highlight">即配物流核心岗，薪资竞争力极强，调度策略与运单管理经验直接对应</span>
+  </div>
+</div>
+
+<div class="job-card rec">
+  <div class="company-row">
+    <strong>拼多多 / Temu</strong>
+    <span class="tag tag-blue">千亿美金市值·跨境电商</span>
+    <a class="job-link" href="https://careers.pddglobalhr.com/jobs/detail?code=PR024235" target="_blank">官网·AI PM →</a>
+    <a class="job-link" href="https://bebee.com/cn/jobs/pdd--techmap_cn_83178063" target="_blank">供应链数据PM →</a>
+  </div>
+  <div class="title">AI产品经理 / 数据产品经理（供应链方向）</div>
+  <div class="meta-row">
+    <span>📍 上海长宁区</span><span>💰 23-45K·16薪</span><span>📋 1-3年</span>
+  </div>
+  <div class="reqs">
+    <strong>AI PM：</strong>AIGC/大模型在电商场景的应用；多模态生成。<br>
+    <strong>供应链数据PM：</strong>供应链数据分析+产品规划；运筹学/统计学。<br>
+    <span class="highlight">Temu供应链是万亿级业务，AI PM经验门槛低（1-3年），适合作为大厂切入点</span>
+  </div>
+</div>
+
+<div class="job-card rec">
+  <div class="company-row">
+    <strong>字节跳动</strong>
+    <span class="tag tag-blue">全球最大独角兽·万亿估值</span>
+    <a class="job-link" href="https://www.liepin.com/city-sh/zpailab/" target="_blank">猎聘搜索 →</a>
+  </div>
+  <div class="title">AI产品经理（智能对话与AI员工）— 抖音生活服务</div>
+  <div class="meta-row">
+    <span>📍 上海徐汇区</span><span>💰 30-60K·15薪</span><span>📋 3-5年</span>
+  </div>
+  <div class="reqs">
+    <strong>核心要求：</strong>智能对话+AI员工；大模型应用落地。<br>
+    <span class="highlight">字节薪资天花板高，上海徐汇办公，非物流但有AI产品核心经验积累价值</span>
+  </div>
+</div>
+
+<div class="job-card rec">
+  <div class="company-row">
+    <strong>NIO蔚来</strong>
+    <span class="tag tag-blue">美股上市·高端新能源汽车</span>
+    <a class="job-link" href="https://m.liepin.com/job/1983197079.shtml" target="_blank">猎聘 →</a>
+  </div>
+  <div class="title">AI产品经理（供应链方向）</div>
+  <div class="meta-row">
+    <span>📍 上海闵行区</span><span>💰 25-50K·13薪</span><span>📋 3年+·硕士优先</span>
+  </div>
+  <div class="reqs">
+    <strong>核心要求：</strong>硕士学历；供应链+AI产品经验；全球采购+零部件供应链场景。<br>
+    <span class="highlight">985硕士加分，美股上市有国际范，供应链方向匹配</span>
+  </div>
+</div>
+
+<!-- ======= Tier 3: 行业独角兽 ======= -->
+<h3><span class="tier-badge tier-3">TIER 3</span> 行业独角兽 / 上市物流巨头</h3>
+
+<div class="job-card">
+  <div class="company-row">
+    <strong>极兔速递 (J&T Express)</strong>
+    <span class="tag tag-green">港股上市·全球化快递</span>
+    <span class="tag tag-purple">最佳匹配！</span>
+    <a class="job-link" href="https://bebee.com/cn/jobs/ai--techmap_cn_83596699" target="_blank">查看职位 →</a>
+  </div>
+  <div class="title">AI大模型产品经理</div>
+  <div class="meta-row">
+    <span>📍 上海青浦区</span><span>💰 25-35K</span><span>📋 5年+（可商）</span>
+  </div>
+  <div class="reqs">
+    <strong>业务场景（直接对应你的经验）：</strong>智能客服、智能路由规划、异常预警——与你的运单管理/订单管理经验直接对应。<br>
+    <strong>技术栈：</strong>GPT/BERT/文心一言等大模型；NLP/CV/多模态技术选型与方案设计。<br>
+    <strong>加分项：</strong>SQL/Python/R数据分析；快递行业AI产品成功案例。<br>
+    <span class="highlight">全球化快递公司（东南亚+中东+拉美），你的物流背景+AI能力=理想组合。青浦办公，离虹桥近</span>
+  </div>
+</div>
+
+<div class="job-card">
+  <div class="company-row">
+    <strong>壹米滴答</strong>
+    <span class="tag tag-green">独角兽·AAAAA级物流</span>
+    <a class="job-link" href="https://www.quanzhi.com/job/69c875ee4d195df713e2520c" target="_blank">猎聘 →</a>
+  </div>
+  <div class="title">AI产品经理</div>
+  <div class="meta-row">
+    <span>📍 上海青浦区</span><span>💰 25-35K</span><span>📋 3-5年</span>
+  </div>
+  <div class="reqs">
+    <strong>核心要求：</strong>LangChain/RAG优先；B2B零担运输+仓配场景；全球化布局（东南亚+中东+欧美）。<br>
+    <span class="highlight">经验门槛适中（3-5年），物流独角兽，AI应用刚刚起步，正是加入的好时机</span>
+  </div>
+</div>
+
+<div class="job-card">
+  <div class="company-row">
+    <strong>申通快递</strong>
+    <span class="tag tag-blue">A股上市·快递巨头</span>
+    <a class="job-link" href="https://m.liepin.com/job/1982278547.shtml" target="_blank">猎聘 →</a>
+  </div>
+  <div class="title">AI产品经理 — 效率方向 / 质量方向</div>
+  <div class="meta-row">
+    <span>📍 上海</span><span>💰 20-35K·13薪</span><span>📋 3-10年（灵活）</span>
+  </div>
+  <div class="reqs">
+    多个AI PM岗位同时在招，数字化转型加速期，AI产品需求大。<br>
+    <span class="highlight">门槛最友好（3年起），物流经验是核心加分项，可作为保底选择</span>
+  </div>
+</div>
+
+<!-- ======= Tier 4: 远程 ======= -->
+<h3><span class="tier-badge tier-4">TIER 4</span> 远程 / 线上办公 — 国际化团队</h3>
+
+<div class="job-card">
+  <div class="company-row">
+    <strong>深圳讴谱科技</strong>
+    <span class="tag tag-teal">远程·AI-Native</span>
+    <a class="job-link" href="https://www.zhipin.com/companys/cc01d5343bb07c280Xx939W0Fw~~.html" target="_blank">BOSS直聘 →</a>
+  </div>
+  <div class="title">AI产品负责人 — 线上办公 · 全职</div>
+  <div class="meta-row">
+    <span>🏠 远程全职（上海可）</span><span>📋 3-5年</span>
+  </div>
+  <div class="reqs">
+    AI Agent产品规划与落地；AI-First团队；远程协作能力。<br>
+    <span class="highlight">纯远程岗位，公司就是做AI的，从上海远程入职</span>
+  </div>
+</div>
+
+<div class="job-card">
+  <div class="company-row">
+    <strong>海口渐渐数字技术 (Gradual)</strong>
+    <span class="tag tag-teal">远程·国际化</span>
+    <a class="job-link" href="https://www.yingjiesheng.com/job-007-991-619.html" target="_blank">查看 →</a>
+  </div>
+  <div class="title">产品经理（远程）</div>
+  <div class="meta-row">
+    <span>🏠 远程（上海可选）</span><span>客户含 OpenAI、Siemens、Roblox</span>
+  </div>
+  <div class="reqs">
+    国际化全员远程公司，英文读写能力要求；AI驱动的客户智能和社区平台。<br>
+    <span class="highlight">平台好+远程自由，但偏初级，可作为Plan B</span>
+  </div>
+</div>
+
+<!-- ======= 能力总结 ======= -->
+<h2>二、{{target_role}}核心能力模型（跨层级通用）</h2>
+
+<div class="skill-grid">
+  <div class="skill-card">
+    <h4>🧠 AI/ML技术理解</h4>
+    <ul>
+      <li>LLM原理（Transformer/Token）— Amazon/Apple/极兔</li>
+      <li>RAG（检索增强生成）— DHL/壹米滴答/蚂蚁</li>
+      <li>Agent/智能体编排 — Amazon/蚂蚁/DHL</li>
+      <li>Prompt Engineering — 几乎所有岗位基础要求</li>
+      <li>模型评测与A/B实验 — Amazon/饿了么明确要求</li>
+    </ul>
+  </div>
+  <div class="skill-card">
+    <h4>📊 数据能力</h4>
+    <ul>
+      <li>SQL — Flexport/极兔/拼多多明确要求</li>
+      <li>Python/R数据分析 — 极兔/拼多多加分项</li>
+      <li>指标体系设计 — Amazon/蚂蚁要求</li>
+      <li>A/B实验设计 — Amazon/美团强调</li>
+      <li>数据闭环与标注 — 饿了么大模型平台</li>
+    </ul>
+  </div>
+  <div class="skill-card">
+    <h4>🏗️ 产品基本功</h4>
+    <ul>
+      <li>PRD/产品文档 — 所有岗位</li>
+      <li>AI产品路线图 — Amazon/Maersk强调</li>
+      <li>跨时区协作 — Amazon/Maersk/DHL</li>
+      <li>利益相关方管理 — Amazon C-level沟通</li>
+      <li>敏捷/DevOps — Maersk/DHL要求</li>
+    </ul>
+  </div>
+  <div class="skill-card">
+    <h4>🚚 物流供应链知识</h4>
+    <ul>
+      <li>快递全链路 — 极兔/申通核心场景</li>
+      <li>运输调度与路由 — 极兔/美团/饿了么</li>
+      <li>供应链计划与预测 — Amazon FBA/Maersk</li>
+      <li>仓储与配送 — 壹米滴答/拼多多Temu</li>
+      <li>跨境物流 — 蚂蚁国际/Maersk/Flexport</li>
+    </ul>
+  </div>
+  <div class="skill-card">
+    <h4>🤝 软技能</h4>
+    <ul>
+      <li>中英文双语 — Amazon/DHL/Flexport</li>
+      <li>跨部门影响力 — Amazon"influence without authority"</li>
+      <li>变革管理 — DHL/Maersk AI adoption</li>
+      <li>结果导向 — 量化业务价值</li>
+      <li>远程协作 — 远程岗位额外要求</li>
+    </ul>
+  </div>
+  <div class="skill-card">
+    <h4>🔐 AI治理与合规</h4>
+    <ul>
+      <li>Responsible AI — Amazon/Maersk明确要求</li>
+      <li>AI安全护栏 — DHL GenAI岗</li>
+      <li>数据隐私 — 蚂蚁/Amazon合规</li>
+      <li>模型幻觉控制 — 饿了么大模型评测</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======= 差距分析 ======= -->
+<h2>三、差距分析与投递策略</h2>
+
+<div class="strength-box">
+  <h4>✅ 你的核心优势</h4>
+  <ul>
+    <li><strong>物流行业深度经验：</strong>订单/运单/计费结算全流程 — 极兔的智能路由/异常预警、壹米滴答的B2B零担运输、Amazon FBA供应链、蚂蚁国际的跨境物流，都是你的主场。</li>
+    <li><strong>5年产品+交付复合背景：</strong>处于大多数岗位的"3-7年"区间，B端产品功底扎实。</li>
+    <li><strong>985工科硕士：</strong>Amazon/DHL/NIO明确偏好硕士；工科背景理解AI有天然优势。</li>
+  </ul>
+</div>
+
+<div class="gap-box">
+  <h4>⚠️ 短板 + 各层级投递适配度</h4>
+  <table>
+    <tr><th>层级</th><th>代表公司</th><th>经验门槛</th><th>AI经验要求</th><th>你的匹配度</th><th>策略</th></tr>
+    <tr>
+      <td><strong>Tier 1 外企</strong></td>
+      <td>Amazon / Apple / Maersk</td>
+      <td>5-7年+</td>
+      <td>有AI项目经验</td>
+      <td>🟡 产品经验匹配，缺AI实战</td>
+      <td>DHL GenAI PM（2-5年）先切入；Amazon关注Senior PM</td>
+    </tr>
+    <tr>
+      <td><strong>Tier 2 大厂</strong></td>
+      <td>蚂蚁/美团/拼多多/NIO</td>
+      <td>3-5年</td>
+      <td>1-3年AI</td>
+      <td>🟢 经验匹配，需补AI</td>
+      <td>蚂蚁国际（物流AI+跨境）最佳；拼多多门槛最低</td>
+    </tr>
+    <tr>
+      <td><strong>Tier 3 独角兽</strong></td>
+      <td>极兔/壹米滴答/申通</td>
+      <td>3-5年</td>
+      <td>了解AI即可</td>
+      <td>🟢🟢 最佳匹配</td>
+      <td>极兔+壹米滴答首选！物流经验最被看重</td>
+    </tr>
+    <tr>
+      <td><strong>Tier 4 远程</strong></td>
+      <td>讴谱/Gradual</td>
+      <td>1-5年</td>
+      <td>有AI经验</td>
+      <td>🟡 Plan B</td>
+      <td>国际化远程可作为灵活选项</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ======= 行动建议 ======= -->
+<h2>四、分层投递行动计划</h2>
+
+<ol class="action-steps">
+  <li>
+    <strong>第一步：补AI能力（1-2个月，所有层级通用）</strong><br>
+    <ul>
+      <li>系统学习LLM基础 + RAG + Agent + Prompt Engineering</li>
+      <li>动手做一个物流AI Demo（推荐：快递智能客服Agent ← 极兔核心场景）</li>
+      <li>补SQL（Amazon/Flexport/极兔硬要求）</li>
+    </ul>
+  </li>
+  <li>
+    <strong>第二步：分层精准投递（按优先级排列）</strong><br>
+    <ul>
+      <li><strong>🥇 第一波（最佳匹配）：</strong>极兔速递（青浦，快递AI）→ 壹米滴答（青浦，物流AI）→ 蚂蚁国际（浦东，跨境物流AI助手）</li>
+      <li><strong>🥈 第二波（大厂敲门）：</strong>拼多多AI PM（长宁，门槛低）→ 饿了么大模型PM → 美团履约调度 → NIO供应链AI</li>
+      <li><strong>🥉 第三波（外企冲刺）：</strong>DHL GenAI PM → Flexport上海 → Amazon Senior AI PM → Apple Senior PM</li>
+      <li><strong>🔹 保底：</strong>申通快递AI PM + 讴谱科技远程</li>
+    </ul>
+  </li>
+  <li>
+    <strong>第三步：长期关注（持续）</strong><br>
+    <ul>
+      <li>定期刷新 Amazon Jobs（上海 AI/Supply Chain PM 岗频繁更新）</li>
+      <li>关注 Maersk 上海办公室社招、DHL APAC 新岗位</li>
+      <li>LinkedIn 开启 Job Alert：AI Product Manager + Shanghai + Logistics</li>
+      <li>简历关键词：RAG、Agent、LangChain、SQL、快递全链路、路由规划、物流AI</li>
+    </ul>
+  </li>
+</ol>
+
+<!-- ======= 薪资参考 ======= -->
+<h2>五、薪资参考（按月薪）</h2>
+<table>
+  <tr><th>层级</th><th>代表公司</th><th>月薪范围（¥）</th><th>年包参考</th></tr>
+  <tr><td>Tier 1 外企</td><td>Amazon / Apple / Maersk</td><td>50K - 120K+</td><td>80万 - 200万+（含股票）</td></tr>
+  <tr><td>Tier 2 大厂</td><td>蚂蚁 / 美团 / 字节 / 拼多多</td><td>25K - 60K · 14-16薪</td><td>40万 - 100万</td></tr>
+  <tr><td>Tier 3 独角兽</td><td>极兔 / 壹米滴答 / 申通</td><td>20K - 35K · 13-15薪</td><td>30万 - 55万</td></tr>
+  <tr><td>Tier 4 远程</td><td>讴谱 / Gradual</td><td>面议</td><td>面议</td></tr>
+</table>
+
+<!-- ======= 总结 ======= -->
+<h2>六、核心结论</h2>
+
+<div style="background:#f0f7ff; border-radius:12px; padding:24px; margin-top:12px;">
+  <p style="font-size:1.05rem; line-height:1.9;">
+    <strong>你的最佳路径：</strong>以<strong style="color:#2563eb;">Tier 3（极兔/壹米滴答）为主攻</strong>，以<strong style="color:#7c3aed;">Tier 2（蚂蚁国际/拼多多/美团）为跳板</strong>，以<strong style="color:#f59e0b;">Tier 1（DHL GenAI PM/Amazon）为目标</strong>。
+  </p>
+  <p style="font-size:1.05rem; line-height:1.9; margin-top:8px;">
+    <strong>极兔速递</strong>是当前最匹配的：快递物流+AI大模型，你的运单/订单/计费经验直接落地到智能路由、异常预警、智能客服等场景。壹米滴答同理。
+  </p>
+  <p style="font-size:1.05rem; line-height:1.9; margin-top:8px;">
+    <strong>外企不是没机会：</strong>DHL GenAI PM仅要求2-5年经验（比APAC AI PM的6年+低得多），Amazon上海有供应链PM岗（FBA Supply Chain），都是物流+AI的黄金组合。
+  </p>
+  <p style="font-size:1.05rem; line-height:1.9; margin-top:8px;">
+    <strong>核心策略：</strong>先补AI能力（做1个物流AI项目）→ 投极兔/壹米滴答快速上岸 → 积累AI产品经验后跳Tier 1外企。
+  </p>
+</div>
+
+<footer>
+  报告生成于 2026-07-20 · 数据来源：Amazon Jobs / Apple Careers / Maersk Careers / DHL Careers / 猎聘 / BOSS直聘 / LinkedIn<br>
+  地点筛选：上海 · 远程 · 公司筛选：全球500强外企 + 互联网大厂 + 行业独角兽 · 职位实时变化请以官方页面为准
+</footer>
+
+</div>
+</body>
+</html>
