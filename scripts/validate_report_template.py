@@ -12,12 +12,22 @@ SKILL = ROOT / "SKILL.md"
 GITIGNORE = ROOT / ".gitignore"
 EXAMPLE = ROOT / "examples" / "logistics-ai-pm-report.html"
 
-# Words that must NOT appear in the pure template (only allowed in examples)
-FORBIDDEN_TEMPLATE_WORDS = [
-    "AI产品经理", "AI PM", "物流AI", "上海青浦", "极兔", "壹米滴答",
-    "Amazon", "Apple", "Maersk", "DHL", "Flexport", "蚂蚁", "美团",
-    "拼多多", "NIO", "申通", "讴谱"
+# Patterns that indicate hardcoded example content (must NOT appear in pure template).
+# Using patterns rather than word lists avoids false-positives on generic words.
+EXAMPLE_PATTERNS = [
+    # Job card location/salary/experience markers with real values
+    (r'📍\s*[^{\s]', "hardcoded location (e.g. 📍 上海) outside placeholder"),
+    (r'💰\s*[^{\s]', "hardcoded salary (e.g. 💰 25-35K) outside placeholder"),
+    (r'📋\s*[^{\s]', "hardcoded experience requirement outside placeholder"),
+    # Tier section headers with specific industry company names
+    (r'外企巨头.*全球500强', "hardcoded Tier header"),
+    (r'互联网大厂.*千亿市值', "hardcoded Tier header"),
+    (r'行业独角兽.*上市物流', "hardcoded Tier header"),
+    (r'远程.*国际化公司', "hardcoded Tier header"),
 ]
+# Check only outside CSS blocks and comments to avoid false positives
+CSS_BLOCK = re.compile(r'<style>.*?</style>', re.DOTALL)
+COMMENT_BLOCK = re.compile(r'<!--.*?-->', re.DOTALL)
 
 # Placeholders that MUST appear in the pure template
 REQUIRED_PLACEHOLDERS = [
@@ -41,10 +51,13 @@ def main() -> None:
     if "config/user-profile.yaml" not in gitignore:
         fail(".gitignore must ignore config/user-profile.yaml")
 
-    # 1. Template MUST be pure — no hardcoded business words
-    for word in FORBIDDEN_TEMPLATE_WORDS:
-        if word in template:
-            fail(f"Pure template contains hardcoded word: '{word}'. "
+    # 1. Template MUST be pure — no hardcoded card content patterns
+    # Strip CSS and comments, then check body-only for example patterns
+    body = CSS_BLOCK.sub('', template)
+    body = COMMENT_BLOCK.sub('', body)
+    for pattern, description in EXAMPLE_PATTERNS:
+        if re.search(pattern, body):
+            fail(f"Pure template contains {description}. "
                  f"Move example content to examples/ instead.")
 
     # 2. Template MUST contain all required placeholders
