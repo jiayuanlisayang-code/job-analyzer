@@ -1,7 +1,8 @@
 # Job Market Analyzer 🧠📊
 
 [![Platform](https://img.shields.io/badge/platform-WorkBuddy%20%7C%20Claude%20Code%20%7C%20Cursor-blue)]()
-[![License](https://img.shields.io/badge/license-MIT-green)]()
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![CI](https://github.com/jiayuanlisayang-code/job-analyzer/actions/workflows/validate.yml/badge.svg)](https://github.com/jiayuanlisayang-code/job-analyzer/actions/workflows/validate.yml)
 
 **通用招聘岗位分析报告生成器** — 根据目标岗位/行业/城市从多平台抓取真实岗位，按公司实力四层分级，
 提炼能力模型，对标用户差距，生成结构化 HTML 求职分析报告。
@@ -21,11 +22,10 @@
 > 工作背景？学历？想去哪个行业/城市/公司？
 
 Skill 会自动：
-- 收集你的画像并保存到本地（下次无需重复输入）
-- 读取你的画像
+- 读取或收集你的画像（首次使用引导填写，可保存到本地，下次无需重复输入）
 - 检测并安装 mcp-jobs（如需）
 - 搜索匹配岗位
-- 生成 HTML 报告
+- 生成 HTML 报告（默认输出到 `reports/` 目录）
 
 ### 可选：使用 YAML 预填写画像
 
@@ -48,7 +48,7 @@ Skill 会自动：
 
 ### 支持行业
 
-物流供应链 / 金融 / 医疗健康 / 电商零售 / 企业服务(SaaS) / 通用AI — 各行业有对应的 Tier 公司列表。
+物流供应链（完整公司清单）/ 金融 / 医疗健康 / 电商零售 / 企业服务(SaaS) / 通用AI — 物流供应链已有较完整保底公司列表，其他行业依赖实时发现 + Tier 动态分级。
 
 ## 数据源
 
@@ -65,7 +65,7 @@ Skill 会自动：
 生成的 HTML 报告包含：
 
 - 📋 **精选岗位卡片**（含真实招聘链接）
-- 🧠 **六大维度能力模型**（AI技术/数据/产品/行业知识/软技能/合规）
+- 🧠 **动态能力模型**（根据目标岗位 + JD 高频词自动生成 5-7 维度）
 - 📊 **差距分析表**（四层级匹配度评估）
 - 🎯 **三层投递行动路线图**
 - 💰 **薪资参考矩阵**
@@ -91,9 +91,13 @@ job-market-analyzer/
 | Claude Code / Cursor | ✅ 支持（需手动安装 mcp-jobs） |
 | 通用环境 | ✅ WebSearch 回退可用 |
 
+## 输出文件
+
+生成的报告默认保存在 `reports/` 目录，命名为 `{日期}-{目标岗位}-{城市}.html`。该目录已在 `.gitignore` 中忽略，报告文件不会提交到版本控制。
+
 ## License
 
-MIT
+MIT — 详见 [LICENSE](LICENSE)
 
 ## 开发校验
 
@@ -103,4 +107,4 @@ MIT
 python3 scripts/validate_report_template.py
 ```
 
-该脚本会检查模板中的 Tier CSS 绑定、伪链接和本地画像忽略规则。
+CI 会在每次 push 和 PR 时自动运行该校验（[`.github/workflows/validate.yml`](.github/workflows/validate.yml)）。

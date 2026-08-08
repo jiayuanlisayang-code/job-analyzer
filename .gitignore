@@ -1,10 +1,9 @@
 # Local user profile; may contain personal information
 config/user-profile.yaml
 
-# Generated reports
-*.html
-!assets/report-template.html
-!examples/*.html
+# Generated reports (concentrated in reports/)
+reports/
+/job-report-*.html
 
 # OS/editor files
 .DS_Store
