@@ -2,7 +2,6 @@
 
 [![Platform](https://img.shields.io/badge/platform-WorkBuddy%20%7C%20Claude%20Code%20%7C%20Cursor-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![CI](https://github.com/jiayuanlisayang-code/job-analyzer/actions/workflows/validate.yml/badge.svg)](https://github.com/jiayuanlisayang-code/job-analyzer/actions/workflows/validate.yml)
 
 **通用招聘岗位分析报告生成器** — 根据目标岗位/行业/城市从多平台抓取真实岗位，按公司实力四层分级，
 提炼能力模型，对标用户差距，生成结构化 HTML 求职分析报告。
@@ -107,4 +106,4 @@ MIT — 详见 [LICENSE](LICENSE)
 python3 scripts/validate_report_template.py
 ```
 
-CI 会在每次 push 和 PR 时自动运行该校验（[`.github/workflows/validate.yml`](.github/workflows/validate.yml)）。
+该脚本会检查模板纯度、占位符完整性、Tier CSS 绑定和本地画像忽略规则。

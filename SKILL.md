@@ -63,16 +63,6 @@ Read: config/user-profile.yaml
 
 > 用户提供新信息时覆盖对应字段,未提供则保持默认。config/ 目录下的画像文件已在 .gitignore 排除,不会被上传。
 
-### 画像持久化（保存到本地配置）
-
-**仅在用户明确确认画像后执行写入。不自动保存、不写入简历全文。**
-
-- 写入前向用户确认："是否将以上画像保存到 `config/user-profile.yaml`？下次可直接复用，无需重新填写。"
-- 仅写入用户明确提供的字段，不推断或补全未确认信息
-- 写入格式遵循 `config/user-profile.example.yaml` 的 YAML 结构
-- 写入后提示："画像已保存到 config/user-profile.yaml。该文件已加入 .gitignore，不会被提交到 GitHub。"
-- 如果用户拒绝保存，跳过后直接进入阶段一
-
 ## 平台兼容性
 
 此 skill 跨平台运行。核心逻辑在所有平台一致；数据抓取层由阶段一自动适配。
